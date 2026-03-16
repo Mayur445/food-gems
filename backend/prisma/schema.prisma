@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  avatar    String?
+  bio       String?
+  createdAt DateTime @default(now())
+
+  spots     Spot[]
+  reviews   Review[]
+}
+
+model Spot {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  address     String?
+  city        String
+  country     String   @default("India")
+  latitude    Float
+  longitude   Float
+  priceRange  String   @default("cheap")
+  category    String
+  avgRating   Float    @default(0)
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  createdBy   Int
+  user        User     @relation(fields: [createdBy], references: [id])
+
+  photos      Photo[]
+  reviews     Review[]
+}
+
+model Photo {
+  id        Int      @id @default(autoincrement())
+  url       String
+  caption   String?
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  spotId    Int
+  spot      Spot     @relation(fields: [spotId], references: [id])
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  rating    Int
+  title     String?
+  body      String
+  createdAt DateTime @default(now())
+
+  spotId    Int
+  spot      Spot     @relation(fields: [spotId], references: [id])
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+}
