@@ -13,6 +13,8 @@ function AddSpot() {
   const [error, setError] = useState('');
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationError, setLocationError] = useState('');
   const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
@@ -32,6 +34,57 @@ function AddSpot() {
     if (!token) navigate('/login');
   }, []);
 
+  const handleGetLocation = () => {
+    setLocationLoading(true);
+    setLocationError('');
+
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser');
+      setLocationLoading(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+            { headers: { 'Accept-Language': 'en' } }
+          );
+          const data = await response.json();
+          const city = data.address?.city ||
+                       data.address?.town ||
+                       data.address?.village ||
+                       data.address?.county || '';
+          const address = data.address?.road ||
+                          data.address?.neighbourhood ||
+                          data.address?.suburb || '';
+
+          setFormData(prev => ({
+            ...prev,
+            latitude,
+            longitude,
+            city,
+            address
+          }));
+        } catch (err) {
+          setFormData(prev => ({ ...prev, latitude, longitude }));
+        }
+        setLocationLoading(false);
+      },
+      (error) => {
+        setLocationLoading(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          setLocationError('Location permission denied. Please allow location access or enter manually.');
+        } else {
+          setLocationError('Could not get your location. Please enter manually.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -40,9 +93,7 @@ function AddSpot() {
     const file = e.target.files[0];
     if (file) {
       setPhoto(file);
-      // Create a preview URL so user can see the image before uploading
-      const previewUrl = URL.createObjectURL(file);
-      setPhotoPreview(previewUrl);
+      setPhotoPreview(URL.createObjectURL(file));
     }
   };
 
@@ -54,20 +105,18 @@ function AddSpot() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
 
-    try {
-      // Step 1 — Create the spot
-      const spotResponse = await createSpot({
-        ...formData,
-        latitude: parseFloat(formData.latitude),
-        longitude: parseFloat(formData.longitude),
-      });
+    if (!formData.latitude || !formData.longitude) {
+      setError('Please share your location or enter coordinates manually');
+      return;
+    }
 
+    setLoading(true);
+    try {
+      const spotResponse = await createSpot(formData);
       const newSpotId = spotResponse.data.id;
 
-      // Step 2 — Upload photo if one was selected
       if (photo) {
         const photoFormData = new FormData();
         photoFormData.append('photo', photo);
@@ -77,7 +126,6 @@ function AddSpot() {
       }
 
       navigate(`/spots/${newSpotId}`);
-
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create spot');
     } finally {
@@ -87,7 +135,7 @@ function AddSpot() {
 
   return (
     <div style={styles.page}>
-      {/* Left Side — Tips */}
+      {/* Left Side */}
       <div style={styles.left}>
         <div style={styles.leftInner}>
           <div style={styles.badge}>🍽️ Share a Gem</div>
@@ -99,7 +147,7 @@ function AddSpot() {
             <p style={styles.tipsTitle}>✦ Tips for a great listing</p>
             {[
               '📸 Add a clear photo of the food or place',
-              '📍 Be specific about the location',
+              '📍 Share your current location easily',
               '✍️ Describe what makes it special',
               '💰 Set the right price range',
               '🗂️ Choose the correct category',
@@ -112,7 +160,7 @@ function AddSpot() {
         <div style={styles.circle2} />
       </div>
 
-      {/* Right Side — Form */}
+      {/* Right Side */}
       <div style={styles.right}>
         <div style={styles.card}>
           <h2 style={styles.cardTitle}>Add a Food Spot</h2>
@@ -127,33 +175,18 @@ function AddSpot() {
               <label style={styles.label}>Photo</label>
               {photoPreview ? (
                 <div style={styles.previewWrapper}>
-                  <img
-                    src={photoPreview}
-                    alt="Preview"
-                    style={styles.previewImage}
-                  />
+                  <img src={photoPreview} alt="Preview" style={styles.previewImage} />
                   <div style={styles.previewOverlay}>
-                    <button
-                      type="button"
-                      onClick={handleRemovePhoto}
-                      style={styles.removePhotoBtn}
-                    >
+                    <button type="button" onClick={handleRemovePhoto} style={styles.removePhotoBtn}>
                       ✕ Remove
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current.click()}
-                      style={styles.changePhotoBtn}
-                    >
+                    <button type="button" onClick={() => fileInputRef.current.click()} style={styles.changePhotoBtn}>
                       📸 Change
                     </button>
                   </div>
                 </div>
               ) : (
-                <div
-                  style={styles.uploadZone}
-                  onClick={() => fileInputRef.current.click()}
-                >
+                <div style={styles.uploadZone} onClick={() => fileInputRef.current.click()}>
                   <p style={styles.uploadIcon}>📸</p>
                   <p style={styles.uploadText}>Click to upload a photo</p>
                   <p style={styles.uploadHint}>JPG, PNG or WebP — max 5MB</p>
@@ -215,55 +248,98 @@ function AddSpot() {
               </div>
             </div>
 
-            {/* City & Address */}
-            <div style={styles.row}>
-              <div style={styles.field}>
-                <label style={styles.label}>City *</label>
-                <input
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  style={styles.input}
-                  placeholder="e.g. Bengaluru"
-                  required
-                />
-              </div>
-              <div style={styles.field}>
-                <label style={styles.label}>Address</label>
-                <input
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  style={styles.input}
-                  placeholder="Street / Area"
-                />
-              </div>
-            </div>
+            {/* Location */}
+            <div style={styles.field}>
+              <label style={styles.label}>Location *</label>
 
-            {/* Coordinates */}
-            <div style={styles.row}>
-              <div style={styles.field}>
-                <label style={styles.label}>Latitude *</label>
-                <input
-                  name="latitude"
-                  value={formData.latitude}
-                  onChange={handleChange}
-                  style={styles.input}
-                  placeholder="e.g. 12.9716"
-                  required
-                />
-              </div>
-              <div style={styles.field}>
-                <label style={styles.label}>Longitude *</label>
-                <input
-                  name="longitude"
-                  value={formData.longitude}
-                  onChange={handleChange}
-                  style={styles.input}
-                  placeholder="e.g. 77.5946"
-                  required
-                />
-              </div>
+              {formData.latitude && formData.longitude ? (
+                <div style={styles.locationConfirmed}>
+                  <span>✅ Location captured!</span>
+                  <span style={styles.locationCoords}>
+                    {Number(formData.latitude).toFixed(4)}, {Number(formData.longitude).toFixed(4)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, latitude: '', longitude: '', city: '', address: '' })}
+                    style={styles.locationClearBtn}
+                  >
+                    ✕ Clear
+                  </button>
+                </div>
+              ) : (
+                <div style={styles.locationOptions}>
+                  {/* Use Current Location Button */}
+                  <button
+                    type="button"
+                    onClick={handleGetLocation}
+                    style={styles.locationBtn}
+                    disabled={locationLoading}
+                  >
+                    <span style={styles.locationBtnIcon}>📍</span>
+                    <div>
+                      <p style={styles.locationBtnTitle}>
+                        {locationLoading ? 'Getting your location...' : 'Use My Current Location'}
+                      </p>
+                      <p style={styles.locationBtnDesc}>
+                        Like WhatsApp location sharing
+                      </p>
+                    </div>
+                  </button>
+
+                  {/* Divider */}
+                  <div style={styles.locationDivider}>
+                    <div style={styles.locationDividerLine} />
+                    <span>or enter manually</span>
+                    <div style={styles.locationDividerLine} />
+                  </div>
+
+                  {/* Manual Entry */}
+                  <div style={styles.row}>
+                    <div style={{ flex: 1 }}>
+                      <input
+                        name="city"
+                        value={formData.city}
+                        onChange={handleChange}
+                        style={styles.input}
+                        placeholder="City"
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <input
+                        name="address"
+                        value={formData.address}
+                        onChange={handleChange}
+                        style={styles.input}
+                        placeholder="Area / Street"
+                      />
+                    </div>
+                  </div>
+                  <div style={styles.row}>
+                    <div style={{ flex: 1 }}>
+                      <input
+                        name="latitude"
+                        value={formData.latitude}
+                        onChange={handleChange}
+                        style={styles.input}
+                        placeholder="Latitude (e.g. 12.9716)"
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <input
+                        name="longitude"
+                        value={formData.longitude}
+                        onChange={handleChange}
+                        style={styles.input}
+                        placeholder="Longitude (e.g. 77.5946)"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {locationError && (
+                <p style={styles.locationErrorText}>⚠️ {locationError}</p>
+              )}
             </div>
 
             {/* Price Range */}
@@ -463,7 +539,8 @@ const styles = {
   },
   row: {
     display: 'flex',
-    gap: '16px',
+    gap: '12px',
+    marginBottom: '12px',
   },
   categoryGrid: {
     display: 'flex',
@@ -518,7 +595,81 @@ const styles = {
     fontSize: '11px',
     color: 'var(--text-light)',
   },
-  // Photo Upload
+  locationOptions: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  },
+  locationBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    padding: '16px 20px',
+    backgroundColor: 'var(--cream)',
+    border: '2px solid var(--cream-dark)',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    width: '100%',
+    textAlign: 'left',
+    fontFamily: 'DM Sans, sans-serif',
+    transition: 'all 0.2s',
+  },
+  locationBtnIcon: {
+    fontSize: '28px',
+    flexShrink: 0,
+  },
+  locationBtnTitle: {
+    fontSize: '15px',
+    fontWeight: '600',
+    color: 'var(--text)',
+    marginBottom: '2px',
+  },
+  locationBtnDesc: {
+    fontSize: '12px',
+    color: 'var(--text-light)',
+  },
+  locationDivider: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    color: 'var(--text-light)',
+    fontSize: '13px',
+  },
+  locationDividerLine: {
+    flex: 1,
+    height: '1px',
+    backgroundColor: 'var(--cream-dark)',
+  },
+  locationConfirmed: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '12px',
+    fontSize: '14px',
+    color: '#166534',
+    backgroundColor: '#f0fff4',
+    border: '1px solid #86efac',
+    padding: '14px 16px',
+    borderRadius: '12px',
+  },
+  locationCoords: {
+    fontSize: '12px',
+    color: '#666',
+    fontFamily: 'Courier New, monospace',
+  },
+  locationClearBtn: {
+    backgroundColor: 'transparent',
+    border: 'none',
+    color: '#666',
+    cursor: 'pointer',
+    fontSize: '13px',
+    flexShrink: 0,
+  },
+  locationErrorText: {
+    fontSize: '13px',
+    color: '#cc0000',
+    marginTop: '8px',
+  },
   uploadZone: {
     border: '2px dashed var(--cream-dark)',
     borderRadius: '16px',
@@ -526,7 +677,6 @@ const styles = {
     textAlign: 'center',
     cursor: 'pointer',
     backgroundColor: 'var(--cream)',
-    transition: 'border-color 0.2s',
   },
   uploadIcon: {
     fontSize: '40px',
@@ -573,7 +723,6 @@ const styles = {
     fontSize: '13px',
     cursor: 'pointer',
     fontFamily: 'DM Sans, sans-serif',
-    backdropFilter: 'blur(4px)',
   },
   changePhotoBtn: {
     backgroundColor: 'var(--primary)',

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAllSpots } from '../api/spots';
 import SkeletonCard from '../components/SkeletonCard';
+import Map from '../components/Map';
 
 const CATEGORIES = [
   'All', 'Street Food', 'Tea Stall', 'Cafe',
@@ -22,6 +23,7 @@ function Home() {
   const [category, setCategory] = useState('');
   const [priceRange, setPriceRange] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [view, setView] = useState('grid');
 
   const fetchSpots = async (filters = {}) => {
     setLoading(true);
@@ -39,11 +41,10 @@ function Home() {
     fetchSpots();
   }, []);
 
-  // Fetch when filters change
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchSpots({ search, category, priceRange });
-    }, 400); // debounce — wait 400ms after user stops typing
+    }, 400);
     return () => clearTimeout(timer);
   }, [search, category, priceRange]);
 
@@ -88,8 +89,6 @@ function Home() {
             )}
           </div>
         </div>
-
-        {/* Decorative circles */}
         <div style={styles.circle1} />
         <div style={styles.circle2} />
       </div>
@@ -99,7 +98,6 @@ function Home() {
 
         {/* Filters Row */}
         <div style={styles.filtersRow}>
-          {/* Category Pills */}
           <div style={styles.categoryPills}>
             {CATEGORIES.map((cat) => (
               <button
@@ -119,7 +117,6 @@ function Home() {
             ))}
           </div>
 
-          {/* Price Filter */}
           <select
             value={priceRange}
             onChange={(e) => setPriceRange(e.target.value)}
@@ -131,15 +128,38 @@ function Home() {
           </select>
         </div>
 
-        {/* Results Count */}
+        {/* Results Row */}
         <div style={styles.resultsRow}>
           <p style={styles.resultsCount}>
             {loading ? 'Searching...' : `${spots.length} spot${spots.length !== 1 ? 's' : ''} found`}
           </p>
-          <Link to="/add-spot" style={styles.addSpotLink}>+ Share a Gem</Link>
+          <div style={styles.resultsRight}>
+            {/* View Toggle */}
+            <div style={styles.viewToggle}>
+              <button
+                onClick={() => setView('grid')}
+                style={{
+                  ...styles.toggleBtn,
+                  ...(view === 'grid' ? styles.toggleBtnActive : {})
+                }}
+              >
+                ▦ Grid
+              </button>
+              <button
+                onClick={() => setView('map')}
+                style={{
+                  ...styles.toggleBtn,
+                  ...(view === 'map' ? styles.toggleBtnActive : {})
+                }}
+              >
+                🗺️ Map
+              </button>
+            </div>
+            <Link to="/add-spot" style={styles.addSpotLink}>+ Share a Gem</Link>
+          </div>
         </div>
 
-        {/* Spots Grid */}
+        {/* Content */}
         {loading ? (
           <div style={styles.grid}>
             {[1, 2, 3, 4, 5, 6].map((n) => <SkeletonCard key={n} />)}
@@ -150,6 +170,10 @@ function Home() {
             <h3 style={styles.emptyTitle}>No spots found</h3>
             <p style={styles.emptyText}>Try a different search or be the first to add one!</p>
             <Link to="/add-spot" style={styles.emptyBtn}>Add a Spot</Link>
+          </div>
+        ) : view === 'map' ? (
+          <div style={styles.mapWrapper}>
+            <Map spots={spots} />
           </div>
         ) : (
           <div style={styles.grid}>
@@ -167,7 +191,6 @@ function SpotCard({ spot }) {
   return (
     <Link to={`/spots/${spot.id}`} style={{ textDecoration: 'none' }}>
       <div style={styles.card}>
-        {/* Image */}
         {spot.photos && spot.photos.length > 0 ? (
           <div style={styles.cardImageWrapper}>
             <img src={spot.photos[0].url} alt={spot.name} style={styles.cardImage} />
@@ -181,7 +204,6 @@ function SpotCard({ spot }) {
           </div>
         )}
 
-        {/* Body */}
         <div style={styles.cardBody}>
           <div style={styles.cardTop}>
             <h3 style={styles.cardTitle}>{spot.name}</h3>
@@ -192,13 +214,8 @@ function SpotCard({ spot }) {
               </span>
             </div>
           </div>
-
-          <p style={styles.cardCity}>
-            📍 {spot.city}
-          </p>
-
+          <p style={styles.cardCity}>📍 {spot.city}</p>
           <p style={styles.cardDesc}>{spot.description}</p>
-
           <div style={styles.cardFooter}>
             <span style={styles.cardPrice}>
               {spot.priceRange === 'cheap' ? '💰 Budget' :
@@ -213,7 +230,6 @@ function SpotCard({ spot }) {
 }
 
 const styles = {
-  // Hero
   hero: {
     background: 'linear-gradient(135deg, var(--dark) 0%, #2D1B69 100%)',
     padding: '80px 24px 100px',
@@ -303,7 +319,6 @@ const styles = {
     backgroundColor: 'rgba(232,116,26,0.08)',
     zIndex: 1,
   },
-  // Main
   main: {
     maxWidth: '1200px',
     margin: '-40px auto 0',
@@ -366,18 +381,51 @@ const styles = {
     fontSize: '14px',
     fontWeight: '500',
   },
+  resultsRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+  },
+  viewToggle: {
+    display: 'flex',
+    backgroundColor: 'white',
+    borderRadius: '100px',
+    padding: '4px',
+    boxShadow: 'var(--shadow-sm)',
+    gap: '4px',
+  },
+  toggleBtn: {
+    padding: '6px 16px',
+    borderRadius: '100px',
+    border: 'none',
+    backgroundColor: 'transparent',
+    fontSize: '13px',
+    fontWeight: '500',
+    color: 'var(--text-light)',
+    cursor: 'pointer',
+    fontFamily: 'DM Sans, sans-serif',
+  },
+  toggleBtnActive: {
+    backgroundColor: 'var(--primary)',
+    color: 'white',
+  },
   addSpotLink: {
     color: 'var(--primary)',
     fontWeight: '600',
     fontSize: '14px',
     textDecoration: 'none',
   },
+  mapWrapper: {
+    height: '600px',
+    borderRadius: '16px',
+    overflow: 'hidden',
+    boxShadow: 'var(--shadow-md)',
+  },
   grid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
     gap: '24px',
   },
-  // Card
   card: {
     backgroundColor: 'white',
     borderRadius: 'var(--radius)',
@@ -490,7 +538,6 @@ const styles = {
     fontSize: '12px',
     color: '#aaa',
   },
-  // Empty state
   empty: {
     textAlign: 'center',
     padding: '80px 20px',
