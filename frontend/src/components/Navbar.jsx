@@ -12,29 +12,35 @@ function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    setMenuOpen(false);
     navigate('/login');
   };
+
+  const closeMenu = () => setMenuOpen(false);
 
   return (
     <nav style={styles.nav}>
       <div style={styles.inner}>
-        <Link to="/" style={styles.logo}>
+        {/* Logo */}
+        <Link to="/" style={styles.logo} onClick={closeMenu}>
           <span style={styles.logoIcon}>🍜</span>
-          <span style={styles.logoText}>Food<span style={styles.logoAccent}>Gems</span></span>
+          <span style={styles.logoText}>
+            Food<span style={styles.logoAccent}>Gems</span>
+          </span>
         </Link>
 
-        <div style={styles.links}>
+        {/* Desktop Links */}
+        <div className="nav-desktop">
           <Link to="/" style={styles.link}>Explore</Link>
-
           {isLoggedIn ? (
             <>
               <Link to="/add-spot" style={styles.addBtn}>+ Add Spot</Link>
-              <div style={styles.userMenu}>
-                <span style={styles.userName}>Hi, {user?.name}! 👋</span>
-                <button onClick={handleLogout} style={styles.logoutBtn}>
-                  Logout
-                </button>
-              </div>
+              <Link to="/profile" style={styles.userNameLink}>
+                Hi, {user?.name}! 👋
+              </Link>
+              <button onClick={handleLogout} style={styles.logoutBtn}>
+                Logout
+              </button>
             </>
           ) : (
             <>
@@ -43,7 +49,50 @@ function Navbar() {
             </>
           )}
         </div>
+
+        {/* Hamburger Button */}
+        <button
+          className="nav-hamburger"
+          style={styles.hamburger}
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Toggle menu"
+        >
+          {menuOpen ? '✕' : '☰'}
+        </button>
       </div>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div style={styles.mobileMenu}>
+          <Link to="/" style={styles.mobileLink} onClick={closeMenu}>
+            🏠 Explore
+          </Link>
+          {isLoggedIn ? (
+            <>
+              <Link to="/add-spot" style={styles.mobileLink} onClick={closeMenu}>
+                ➕ Add Spot
+              </Link>
+              <Link to="/profile" style={styles.mobileLink} onClick={closeMenu}>
+                👤 My Profile
+              </Link>
+              <div style={styles.mobileDivider} />
+              <span style={styles.mobileUser}>👋 Hi, {user?.name}!</span>
+              <button onClick={handleLogout} style={styles.mobileLogoutBtn}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" style={styles.mobileLink} onClick={closeMenu}>
+                🔑 Login
+              </Link>
+              <Link to="/register" style={styles.mobileRegisterBtn} onClick={closeMenu}>
+                Join Free
+              </Link>
+            </>
+          )}
+        </div>
+      )}
     </nav>
   );
 }
@@ -77,52 +126,44 @@ const styles = {
   logoText: {
     fontSize: '22px',
     fontWeight: '700',
-    color: 'var(--white)',
+    color: 'white',
     fontFamily: 'Playfair Display, serif',
     letterSpacing: '-0.5px',
   },
   logoAccent: {
     color: 'var(--primary)',
   },
-  links: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '28px',
-  },
   link: {
     color: 'rgba(255,255,255,0.8)',
     textDecoration: 'none',
     fontSize: '15px',
     fontWeight: '500',
-    transition: 'color 0.2s',
   },
   addBtn: {
     backgroundColor: 'var(--primary)',
-    color: 'var(--white)',
+    color: 'white',
     padding: '8px 20px',
     borderRadius: '100px',
     fontSize: '14px',
     fontWeight: '600',
     textDecoration: 'none',
-    transition: 'background 0.2s',
   },
   registerBtn: {
     backgroundColor: 'var(--primary)',
-    color: 'var(--white)',
+    color: 'white',
     padding: '8px 20px',
     borderRadius: '100px',
     fontSize: '14px',
     fontWeight: '600',
     textDecoration: 'none',
   },
-  userMenu: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-  },
-  userName: {
+  userNameLink: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: '14px',
+    textDecoration: 'none',
+    cursor: 'pointer',
+    borderBottom: '1px dashed rgba(255,255,255,0.3)',
+    paddingBottom: '1px',
   },
   logoutBtn: {
     backgroundColor: 'transparent',
@@ -132,7 +173,64 @@ const styles = {
     borderRadius: '100px',
     fontSize: '13px',
     cursor: 'pointer',
-    transition: 'all 0.2s',
+  },
+  hamburger: {
+    display: 'none',
+    backgroundColor: 'transparent',
+    border: 'none',
+    color: 'white',
+    fontSize: '24px',
+    cursor: 'pointer',
+    padding: '4px 8px',
+  },
+  mobileMenu: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '16px 24px 24px',
+    gap: '4px',
+    borderTop: '1px solid rgba(255,255,255,0.1)',
+  },
+  mobileLink: {
+    color: 'rgba(255,255,255,0.85)',
+    textDecoration: 'none',
+    fontSize: '16px',
+    fontWeight: '500',
+    padding: '12px 0',
+    borderBottom: '1px solid rgba(255,255,255,0.08)',
+  },
+  mobileDivider: {
+    height: '1px',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    margin: '8px 0',
+  },
+  mobileUser: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: '14px',
+    padding: '8px 0',
+  },
+  mobileLogoutBtn: {
+    backgroundColor: 'transparent',
+    border: '1px solid rgba(255,255,255,0.3)',
+    color: 'rgba(255,255,255,0.8)',
+    padding: '10px 16px',
+    borderRadius: '100px',
+    fontSize: '14px',
+    cursor: 'pointer',
+    marginTop: '8px',
+    fontFamily: 'DM Sans, sans-serif',
+    width: '100%',
+  },
+  mobileRegisterBtn: {
+    display: 'block',
+    backgroundColor: 'var(--primary)',
+    color: 'white',
+    padding: '12px 20px',
+    borderRadius: '100px',
+    fontSize: '15px',
+    fontWeight: '600',
+    textDecoration: 'none',
+    textAlign: 'center',
+    marginTop: '8px',
   },
 };
 

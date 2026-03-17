@@ -134,16 +134,16 @@ function AddSpot() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page} className="split-page">
       {/* Left Side */}
-      <div style={styles.left}>
-        <div style={styles.leftInner}>
+      <div style={styles.left} className="split-left">
+        <div style={styles.leftInner} className="split-left-inner">
           <div style={styles.badge}>🍽️ Share a Gem</div>
-          <h1 style={styles.title}>Know a hidden<br />food paradise?</h1>
-          <p style={styles.subtitle}>
+          <h1 style={styles.title} className="split-left-title">Know a hidden<br />food paradise?</h1>
+          <p style={styles.subtitle} className="split-left-subtitle">
             Share it with travelers who are searching for authentic, real food experiences.
           </p>
-          <div style={styles.tips}>
+          <div style={styles.tips} className="split-left-extras">
             <p style={styles.tipsTitle}>✦ Tips for a great listing</p>
             {[
               '📸 Add a clear photo of the food or place',
@@ -161,8 +161,8 @@ function AddSpot() {
       </div>
 
       {/* Right Side */}
-      <div style={styles.right}>
-        <div style={styles.card}>
+      <div style={styles.right} className="split-right">
+        <div style={styles.card} className="split-card">
           <h2 style={styles.cardTitle}>Add a Food Spot</h2>
           <p style={styles.cardSubtitle}>Fill in the details below</p>
 
@@ -295,7 +295,7 @@ function AddSpot() {
 
                   {/* Manual Entry */}
                   <div style={styles.row}>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <input
                         name="city"
                         value={formData.city}
@@ -304,7 +304,7 @@ function AddSpot() {
                         placeholder="City"
                       />
                     </div>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <input
                         name="address"
                         value={formData.address}
@@ -315,7 +315,7 @@ function AddSpot() {
                     </div>
                   </div>
                   <div style={styles.row}>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <input
                         name="latitude"
                         value={formData.latitude}
@@ -324,7 +324,7 @@ function AddSpot() {
                         placeholder="Latitude (e.g. 12.9716)"
                       />
                     </div>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <input
                         name="longitude"
                         value={formData.longitude}
@@ -345,7 +345,7 @@ function AddSpot() {
             {/* Price Range */}
             <div style={styles.field}>
               <label style={styles.label}>Price Range *</label>
-              <div style={styles.priceRow}>
+              <div style={styles.priceRow} className="price-row">
                 {[
                   { value: 'cheap', label: '💰 Budget', desc: 'Under ₹100' },
                   { value: 'moderate', label: '💰💰 Moderate', desc: '₹100–₹300' },
@@ -651,6 +651,7 @@ const styles = {
     border: '1px solid #86efac',
     padding: '14px 16px',
     borderRadius: '12px',
+    flexWrap: 'wrap',
   },
   locationCoords: {
     fontSize: '12px',

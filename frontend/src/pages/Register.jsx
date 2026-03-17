@@ -27,17 +27,17 @@ function Register() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page} className="split-page">
       {/* Left Panel */}
-      <div style={styles.left}>
-        <div style={styles.leftInner}>
+      <div style={styles.left} className="split-left">
+        <div style={styles.leftInner} className="split-left-inner">
           <Link to="/" style={styles.backLink}>← Back to Food Gems</Link>
           <div style={styles.badge}>✦ Join the Community</div>
-          <h1 style={styles.title}>Start your food<br />adventure today.</h1>
-          <p style={styles.subtitle}>
+          <h1 style={styles.title} className="split-left-title">Start your food<br />adventure today.</h1>
+          <p style={styles.subtitle} className="split-left-subtitle">
             Create a free account and start sharing hidden food gems with travelers around the world.
           </p>
-          <div style={styles.features}>
+          <div style={styles.features} className="split-left-extras">
             {[
               '🗺️ Discover spots on an interactive map',
               '📸 Share photos of amazing food',
@@ -53,8 +53,8 @@ function Register() {
       </div>
 
       {/* Right Panel */}
-      <div style={styles.right}>
-        <div style={styles.card}>
+      <div style={styles.right} className="split-right">
+        <div style={styles.card} className="split-card">
           <h2 style={styles.cardTitle}>Create Account</h2>
           <p style={styles.cardSubtitle}>It's free and takes less than a minute</p>
 

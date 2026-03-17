@@ -18,9 +18,11 @@ const spotRoutes = require('./routes/spotRoutes');
 const authRoutes = require('./routes/authRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const photoRoutes = require('./routes/photoRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 // Register routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/spots/:id/reviews', reviewRoutes);
 app.use('/api/spots/:id/photos', photoRoutes);
 app.use('/api/spots', spotRoutes);

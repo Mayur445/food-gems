@@ -76,18 +76,18 @@ function SpotDetail() {
   return (
     <div style={styles.page}>
       {/* Hero Image */}
-      <div style={styles.hero}>
+      <div style={styles.hero} className="spot-hero">
         {primaryPhoto ? (
           <img src={primaryPhoto.url} alt={spot.name} style={styles.heroImage} />
         ) : (
           <div style={styles.heroPlaceholder}>🍽️</div>
         )}
         <div style={styles.heroOverlay} />
-        <div style={styles.heroContent}>
+        <div style={styles.heroContent} className="spot-hero-content">
           <Link to="/" style={styles.backLink}>← Back to Explore</Link>
           <div style={styles.heroBadge}>{spot.category}</div>
-          <h1 style={styles.heroTitle}>{spot.name}</h1>
-          <div style={styles.heroMeta}>
+          <h1 style={styles.heroTitle} className="spot-hero-title">{spot.name}</h1>
+          <div style={styles.heroMeta} className="spot-hero-meta">
             <span>📍 {spot.address ? `${spot.address}, ` : ''}{spot.city}</span>
             <span style={styles.heroDot}>·</span>
             <span>⭐ {spot.avgRating > 0 ? spot.avgRating.toFixed(1) : 'New'}</span>
@@ -101,12 +101,12 @@ function SpotDetail() {
       </div>
 
       {/* Main Content */}
-      <div style={styles.main}>
+      <div style={styles.main} className="spot-main">
         <div style={styles.content}>
 
           {/* About */}
-          <div style={styles.section}>
-            <h2 style={styles.sectionTitle}>About this place</h2>
+          <div style={styles.section} className="spot-section">
+            <h2 style={styles.sectionTitle} className="spot-section-title">About this place</h2>
             <p style={styles.description}>{spot.description}</p>
             <p style={styles.addedBy}>
               ✦ Added by <strong>{spot.user?.name}</strong>
@@ -115,9 +115,9 @@ function SpotDetail() {
 
           {/* Photo Gallery */}
           {spot.photos && spot.photos.length > 1 && (
-            <div style={styles.section}>
-              <h2 style={styles.sectionTitle}>Photos</h2>
-              <div style={styles.photoGrid}>
+            <div style={styles.section} className="spot-section">
+              <h2 style={styles.sectionTitle} className="spot-section-title">Photos</h2>
+              <div style={styles.photoGrid} className="photo-grid">
                 {spot.photos.map((photo) => (
                   <div key={photo.id} style={styles.photoWrapper}>
                     <img
@@ -135,9 +135,9 @@ function SpotDetail() {
           )}
 
           {/* Reviews */}
-          <div style={styles.section}>
-            <div style={styles.reviewsHeader}>
-              <h2 style={styles.sectionTitle}>
+          <div style={styles.section} className="spot-section">
+            <div style={styles.reviewsHeader} className="reviews-header">
+              <h2 style={styles.sectionTitle} className="spot-section-title">
                 Reviews
                 <span style={styles.reviewCount}>
                   {spot.reviews?.length || 0}
@@ -193,8 +193,8 @@ function SpotDetail() {
 
           {/* Write Review */}
           {isLoggedIn ? (
-            <div style={styles.section}>
-              <h2 style={styles.sectionTitle}>Write a Review</h2>
+            <div style={styles.section} className="spot-section">
+              <h2 style={styles.sectionTitle} className="spot-section-title">Write a Review</h2>
 
               {reviewError && (
                 <div style={styles.errorBox}>⚠️ {reviewError}</div>
@@ -508,6 +508,7 @@ const styles = {
   },
   reviewMeta: {
     flex: 1,
+    minWidth: 0,
   },
   reviewName: {
     fontWeight: '600',
@@ -520,6 +521,7 @@ const styles = {
   },
   reviewStars: {
     fontSize: '14px',
+    flexShrink: 0,
   },
   reviewTitle: {
     color: 'var(--dark)',
@@ -612,6 +614,7 @@ const styles = {
     fontWeight: '600',
     cursor: 'pointer',
     fontFamily: 'DM Sans, sans-serif',
+    width: '100%',
   },
   errorBox: {
     backgroundColor: '#fff0f0',

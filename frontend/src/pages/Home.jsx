@@ -16,6 +16,16 @@ const PRICE_RANGES = [
   { value: 'expensive', label: '💰💰💰 Premium' },
 ];
 
+function useWindowWidth() {
+  const [width, setWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handler = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  return width;
+}
+
 function Home() {
   const [spots, setSpots] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +34,10 @@ function Home() {
   const [priceRange, setPriceRange] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [view, setView] = useState('grid');
+
+  const width = useWindowWidth();
+  const isMobile = width <= 768;
+  const isSmall = width <= 480;
 
   const fetchSpots = async (filters = {}) => {
     setLoading(true);
@@ -60,14 +74,24 @@ function Home() {
   return (
     <div>
       {/* Hero Section */}
-      <div style={styles.hero}>
+      <div style={{
+        ...styles.hero,
+        padding: isSmall ? '40px 16px 60px' : isMobile ? '50px 20px 70px' : '80px 24px 100px',
+      }}>
         <div style={styles.heroInner}>
           <p style={styles.heroTag}>✦ Community Powered</p>
-          <h1 style={styles.heroTitle}>
+          <h1 style={{
+            ...styles.heroTitle,
+            fontSize: isSmall ? '26px' : isMobile ? '34px' : '52px',
+          }}>
             Find Hidden Food<br />
             <span style={styles.heroAccent}>Gems Near You</span>
           </h1>
-          <p style={styles.heroSubtitle}>
+          <p style={{
+            ...styles.heroSubtitle,
+            fontSize: isSmall ? '14px' : isMobile ? '15px' : '18px',
+            marginBottom: isMobile ? '24px' : '36px',
+          }}>
             Real spots. Real food. Shared by real travelers.
           </p>
 
@@ -76,7 +100,7 @@ function Home() {
             <span style={styles.searchIcon}>🔍</span>
             <input
               type="text"
-              placeholder="Search by name, city or description..."
+              placeholder={isMobile ? 'Search spots...' : 'Search by name, city or description...'}
               value={searchInput}
               onChange={handleSearch}
               style={styles.searchInput}
@@ -94,11 +118,29 @@ function Home() {
       </div>
 
       {/* Main Content */}
-      <div style={styles.main}>
+      <div style={{
+        ...styles.main,
+        padding: isSmall ? '0 12px 32px' : isMobile ? '0 16px 40px' : '0 24px 60px',
+        marginTop: isMobile ? '-30px' : '-40px',
+      }}>
 
         {/* Filters Row */}
-        <div style={styles.filtersRow}>
-          <div style={styles.categoryPills}>
+        <div style={{
+          ...styles.filtersRow,
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'stretch' : 'center',
+          gap: isMobile ? '12px' : '16px',
+          padding: isMobile ? '14px 16px' : '16px 20px',
+        }}>
+          <div style={{
+            ...styles.categoryPills,
+            flexWrap: isMobile ? 'nowrap' : 'wrap',
+            overflowX: isMobile ? 'auto' : 'visible',
+            paddingBottom: isMobile ? '4px' : '0',
+            WebkitOverflowScrolling: 'touch',
+            msOverflowStyle: 'none',
+            scrollbarWidth: 'none',
+          }}>
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
@@ -120,7 +162,10 @@ function Home() {
           <select
             value={priceRange}
             onChange={(e) => setPriceRange(e.target.value)}
-            style={styles.priceSelect}
+            style={{
+              ...styles.priceSelect,
+              width: isMobile ? '100%' : 'auto',
+            }}
           >
             {PRICE_RANGES.map((p) => (
               <option key={p.value} value={p.value}>{p.label}</option>
@@ -129,12 +174,20 @@ function Home() {
         </div>
 
         {/* Results Row */}
-        <div style={styles.resultsRow}>
+        <div style={{
+          ...styles.resultsRow,
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'flex-start' : 'center',
+          gap: isMobile ? '10px' : '0',
+        }}>
           <p style={styles.resultsCount}>
             {loading ? 'Searching...' : `${spots.length} spot${spots.length !== 1 ? 's' : ''} found`}
           </p>
-          <div style={styles.resultsRight}>
-            {/* View Toggle */}
+          <div style={{
+            ...styles.resultsRight,
+            width: isMobile ? '100%' : 'auto',
+            justifyContent: isMobile ? 'space-between' : 'flex-end',
+          }}>
             <div style={styles.viewToggle}>
               <button
                 onClick={() => setView('grid')}
@@ -161,7 +214,10 @@ function Home() {
 
         {/* Content */}
         {loading ? (
-          <div style={styles.grid}>
+          <div style={{
+            ...styles.grid,
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(320px, 1fr))',
+          }}>
             {[1, 2, 3, 4, 5, 6].map((n) => <SkeletonCard key={n} />)}
           </div>
         ) : spots.length === 0 ? (
@@ -172,11 +228,17 @@ function Home() {
             <Link to="/add-spot" style={styles.emptyBtn}>Add a Spot</Link>
           </div>
         ) : view === 'map' ? (
-          <div style={styles.mapWrapper}>
+          <div style={{
+            ...styles.mapWrapper,
+            height: isMobile ? '420px' : '600px',
+          }}>
             <Map spots={spots} />
           </div>
         ) : (
-          <div style={styles.grid}>
+          <div style={{
+            ...styles.grid,
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(320px, 1fr))',
+          }}>
             {spots.map((spot) => (
               <SpotCard key={spot.id} spot={spot} />
             ))}
@@ -287,6 +349,7 @@ const styles = {
     color: 'var(--text)',
     backgroundColor: 'transparent',
     padding: '8px 0',
+    minWidth: 0,
   },
   clearBtn: {
     backgroundColor: '#e0d8d0',
@@ -336,7 +399,6 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: '16px',
-    flexWrap: 'wrap',
   },
   categoryPills: {
     display: 'flex',
@@ -354,6 +416,8 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s',
     fontFamily: 'DM Sans, sans-serif',
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
   },
   pillActive: {
     backgroundColor: 'var(--primary)',
@@ -369,6 +433,7 @@ const styles = {
     color: 'var(--text)',
     cursor: 'pointer',
     outline: 'none',
+    flexShrink: 0,
   },
   resultsRow: {
     display: 'flex',
@@ -414,6 +479,7 @@ const styles = {
     fontWeight: '600',
     fontSize: '14px',
     textDecoration: 'none',
+    whiteSpace: 'nowrap',
   },
   mapWrapper: {
     height: '600px',

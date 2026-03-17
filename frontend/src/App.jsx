@@ -4,6 +4,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import SpotDetail from './pages/SpotDetail'
 import AddSpot from './pages/AddSpot'
+import Profile from './pages/Profile'
 import Navbar from './components/Navbar'
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/spots/:id" element={<SpotDetail />} />
         <Route path="/add-spot" element={<AddSpot />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </div>
   );

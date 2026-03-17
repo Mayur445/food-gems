@@ -26,15 +26,15 @@ function Login() {
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page} className="split-page">
       {/* Left Panel */}
-      <div style={styles.left}>
-        <div style={styles.leftInner}>
+      <div style={styles.left} className="split-left">
+        <div style={styles.leftInner} className="split-left-inner">
           <Link to="/" style={styles.backLink}>← Back to Food Gems</Link>
           <div style={styles.badge}>🍜 Welcome Back</div>
-          <h1 style={styles.title}>Every city hides<br />a delicious secret.</h1>
-          <p style={styles.subtitle}>Login to discover and share hidden food gems with travelers around the world.</p>
-          <div style={styles.statsRow}>
+          <h1 style={styles.title} className="split-left-title">Every city hides<br />a delicious secret.</h1>
+          <p style={styles.subtitle} className="split-left-subtitle">Login to discover and share hidden food gems with travelers around the world.</p>
+          <div style={styles.statsRow} className="split-left-extras">
             <div style={styles.stat}>
               <span style={styles.statNum}>100+</span>
               <span style={styles.statLabel}>Hidden Spots</span>
@@ -56,8 +56,8 @@ function Login() {
       </div>
 
       {/* Right Panel */}
-      <div style={styles.right}>
-        <div style={styles.card}>
+      <div style={styles.right} className="split-right">
+        <div style={styles.card} className="split-card">
           <h2 style={styles.cardTitle}>Sign In</h2>
           <p style={styles.cardSubtitle}>Enter your credentials to continue</p>
 
