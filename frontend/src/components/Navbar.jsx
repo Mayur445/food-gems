@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast'
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -10,11 +11,12 @@ function Navbar() {
   const isLoggedIn = !!token;
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setMenuOpen(false);
-    navigate('/login');
-  };
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  setMenuOpen(false);
+  toast.success('Logged out successfully!');  // add this
+  navigate('/login');
+};
 
   const closeMenu = () => setMenuOpen(false);
 

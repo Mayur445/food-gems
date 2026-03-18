@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import api from '../api/axios';
+import { deleteSpot } from '../api/spots';
 
 function useWindowWidth() {
   const [width, setWidth] = useState(window.innerWidth);
@@ -23,16 +25,13 @@ function Profile() {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', bio: '' });
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState('');
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null); // spot to delete
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    if (!token) {
-      navigate('/login');
-      return;
-    }
+    if (!token) { navigate('/login'); return; }
     const stored = JSON.parse(localStorage.getItem('user') || 'null');
     setUser(stored);
     setEditForm({ name: stored?.name || '', bio: stored?.bio || '' });
@@ -53,35 +52,74 @@ function Profile() {
 
   const handleSave = async () => {
     setSaving(true);
-    setSaveError('');
-    setSaveSuccess(false);
     try {
-      const res = await api.put('/users/me', {
-        name: editForm.name,
-        bio: editForm.bio,
-      });
+      const res = await api.put('/users/me', { name: editForm.name, bio: editForm.bio });
       const updated = res.data.data;
       setUser(updated);
       localStorage.setItem('user', JSON.stringify(updated));
       setEditing(false);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+      toast.success('✅ Profile updated successfully!');
     } catch (err) {
-      setSaveError(err.response?.data?.message || 'Failed to save changes');
+      toast.error(err.response?.data?.message || 'Failed to save changes');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    try {
+      await deleteSpot(deleteTarget.id);
+      setSpots(spots.filter(s => s.id !== deleteTarget.id));
+      toast.success(`🗑️ "${deleteTarget.name}" deleted`);
+      setDeleteTarget(null);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete spot');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
   if (!user) return null;
 
   const avatarLetter = user.name?.charAt(0).toUpperCase();
-  const joinDate = new Date(user.createdAt).toLocaleDateString('en-IN', {
-    year: 'numeric', month: 'long',
-  });
+  const joinDate = user.createdAt
+    ? new Date(user.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long' })
+    : 'Early member';
 
   return (
     <div style={styles.page}>
+
+      {/* Delete Confirmation Dialog */}
+      {deleteTarget && (
+        <div style={styles.dialogOverlay}>
+          <div style={styles.dialog}>
+            <p style={styles.dialogIcon}>🗑️</p>
+            <h3 style={styles.dialogTitle}>Delete this spot?</h3>
+            <p style={styles.dialogText}>
+              This will permanently delete <strong>"{deleteTarget.name}"</strong> along with all its photos and reviews. This cannot be undone.
+            </p>
+            <div style={styles.dialogBtns}>
+              <button
+                onClick={() => setDeleteTarget(null)}
+                style={styles.dialogCancelBtn}
+                disabled={deleteLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                style={styles.dialogDeleteBtn}
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? 'Deleting...' : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header Banner */}
       <div style={styles.banner}>
         <div style={styles.bannerInner}>
@@ -109,12 +147,10 @@ function Profile() {
             flexShrink: 0,
           }}>
             <div style={styles.profileCard}>
-              {/* Avatar */}
               <div style={styles.avatarWrapper}>
                 <div style={styles.avatar}>{avatarLetter}</div>
               </div>
 
-              {/* Info or Edit Form */}
               {editing ? (
                 <div style={styles.editForm}>
                   <div style={styles.field}>
@@ -136,19 +172,11 @@ function Profile() {
                       rows={3}
                     />
                   </div>
-                  {saveError && <p style={styles.errorText}>⚠️ {saveError}</p>}
                   <div style={styles.editBtns}>
-                    <button
-                      onClick={() => { setEditing(false); setSaveError(''); }}
-                      style={styles.cancelBtn}
-                    >
+                    <button onClick={() => setEditing(false)} style={styles.cancelBtn}>
                       Cancel
                     </button>
-                    <button
-                      onClick={handleSave}
-                      style={styles.saveBtn}
-                      disabled={saving}
-                    >
+                    <button onClick={handleSave} style={styles.saveBtn} disabled={saving}>
                       {saving ? 'Saving...' : 'Save'}
                     </button>
                   </div>
@@ -158,22 +186,13 @@ function Profile() {
                   <h2 style={styles.profileName}>{user.name}</h2>
                   <p style={styles.profileEmail}>{user.email}</p>
                   {user.bio && <p style={styles.profileBio}>{user.bio}</p>}
-                  {!user.bio && (
-                    <p style={styles.noBio}>No bio yet — tell others about yourself!</p>
-                  )}
-                  {saveSuccess && (
-                    <p style={styles.successText}>✅ Profile updated!</p>
-                  )}
-                  <button
-                    onClick={() => setEditing(true)}
-                    style={styles.editBtn}
-                  >
+                  {!user.bio && <p style={styles.noBio}>No bio yet — tell others about yourself!</p>}
+                  <button onClick={() => setEditing(true)} style={styles.editBtn}>
                     ✎ Edit Profile
                   </button>
                 </div>
               )}
 
-              {/* Stats */}
               <div style={styles.statsRow}>
                 <div style={styles.stat}>
                   <span style={styles.statNum}>{spots.length}</span>
@@ -217,7 +236,11 @@ function Profile() {
                 gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(260px, 1fr))',
               }}>
                 {spots.map((spot) => (
-                  <ProfileSpotCard key={spot.id} spot={spot} />
+                  <ProfileSpotCard
+                    key={spot.id}
+                    spot={spot}
+                    onDelete={() => setDeleteTarget(spot)}
+                  />
                 ))}
               </div>
             )}
@@ -229,12 +252,12 @@ function Profile() {
   );
 }
 
-function ProfileSpotCard({ spot }) {
+function ProfileSpotCard({ spot, onDelete }) {
   const primaryPhoto = spot.photos?.find(p => p.isPrimary) || spot.photos?.[0];
 
   return (
-    <Link to={`/spots/${spot.id}`} style={{ textDecoration: 'none' }}>
-      <div style={styles.spotCard}>
+    <div style={styles.spotCard}>
+      <Link to={`/spots/${spot.id}`} style={{ textDecoration: 'none' }}>
         {primaryPhoto ? (
           <div style={styles.spotImageWrapper}>
             <img src={primaryPhoto.url} alt={spot.name} style={styles.spotImage} />
@@ -258,8 +281,18 @@ function ProfileSpotCard({ spot }) {
             </span>
           </div>
         </div>
+      </Link>
+
+      {/* Edit / Delete actions */}
+      <div style={styles.cardActions}>
+        <Link to={`/edit-spot/${spot.id}`} style={styles.cardEditBtn}>
+          ✎ Edit
+        </Link>
+        <button onClick={onDelete} style={styles.cardDeleteBtn}>
+          🗑️ Delete
+        </button>
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -267,6 +300,64 @@ const styles = {
   page: {
     backgroundColor: 'var(--cream)',
     minHeight: 'calc(100vh - 68px)',
+  },
+  // Delete dialog
+  dialogOverlay: {
+    position: 'fixed',
+    inset: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 200,
+    padding: '20px',
+  },
+  dialog: {
+    backgroundColor: 'white',
+    borderRadius: '20px',
+    padding: '36px 32px',
+    maxWidth: '420px',
+    width: '100%',
+    textAlign: 'center',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+  },
+  dialogIcon: { fontSize: '40px', marginBottom: '12px' },
+  dialogTitle: {
+    fontSize: '22px',
+    color: 'var(--dark)',
+    fontFamily: 'Playfair Display, serif',
+    marginBottom: '12px',
+  },
+  dialogText: {
+    color: 'var(--text-light)',
+    fontSize: '15px',
+    lineHeight: '1.6',
+    marginBottom: '28px',
+  },
+  dialogBtns: { display: 'flex', gap: '12px' },
+  dialogCancelBtn: {
+    flex: 1,
+    padding: '12px',
+    backgroundColor: 'transparent',
+    border: '1.5px solid var(--cream-dark)',
+    borderRadius: '12px',
+    fontSize: '15px',
+    fontWeight: '600',
+    color: 'var(--text-light)',
+    cursor: 'pointer',
+    fontFamily: 'DM Sans, sans-serif',
+  },
+  dialogDeleteBtn: {
+    flex: 1,
+    padding: '12px',
+    backgroundColor: '#dc2626',
+    border: 'none',
+    borderRadius: '12px',
+    fontSize: '15px',
+    fontWeight: '600',
+    color: 'white',
+    cursor: 'pointer',
+    fontFamily: 'DM Sans, sans-serif',
   },
   banner: {
     background: 'linear-gradient(135deg, var(--dark) 0%, #2D1B69 100%)',
@@ -317,10 +408,7 @@ const styles = {
     gap: '28px',
     alignItems: 'flex-start',
   },
-  sidebar: {
-    width: '300px',
-    flexShrink: 0,
-  },
+  sidebar: { width: '300px', flexShrink: 0 },
   profileCard: {
     backgroundColor: 'white',
     borderRadius: '20px',
@@ -347,9 +435,7 @@ const styles = {
     fontFamily: 'Playfair Display, serif',
     boxShadow: '0 4px 16px rgba(232,116,26,0.3)',
   },
-  profileInfo: {
-    marginBottom: '24px',
-  },
+  profileInfo: { marginBottom: '24px' },
   profileName: {
     fontSize: '22px',
     color: 'var(--dark)',
@@ -384,13 +470,8 @@ const styles = {
     cursor: 'pointer',
     fontFamily: 'DM Sans, sans-serif',
   },
-  editForm: {
-    textAlign: 'left',
-    marginBottom: '24px',
-  },
-  field: {
-    marginBottom: '16px',
-  },
+  editForm: { textAlign: 'left', marginBottom: '24px' },
+  field: { marginBottom: '16px' },
   label: {
     display: 'block',
     fontSize: '12px',
@@ -425,10 +506,7 @@ const styles = {
     resize: 'vertical',
     fontFamily: 'DM Sans, sans-serif',
   },
-  editBtns: {
-    display: 'flex',
-    gap: '10px',
-  },
+  editBtns: { display: 'flex', gap: '10px' },
   cancelBtn: {
     flex: 1,
     padding: '10px',
@@ -452,16 +530,6 @@ const styles = {
     color: 'white',
     cursor: 'pointer',
     fontFamily: 'DM Sans, sans-serif',
-  },
-  errorText: {
-    color: '#cc0000',
-    fontSize: '13px',
-    marginBottom: '12px',
-  },
-  successText: {
-    color: '#166534',
-    fontSize: '13px',
-    marginBottom: '12px',
   },
   statsRow: {
     display: 'flex',
@@ -494,10 +562,7 @@ const styles = {
     height: '32px',
     backgroundColor: 'var(--cream-dark)',
   },
-  spotsSection: {
-    flex: 1,
-    minWidth: 0,
-  },
+  spotsSection: { flex: 1, minWidth: 0 },
   sectionTitle: {
     fontSize: '24px',
     color: 'var(--dark)',
@@ -514,7 +579,6 @@ const styles = {
     borderRadius: '16px',
     overflow: 'hidden',
     boxShadow: 'var(--shadow-sm)',
-    cursor: 'pointer',
     transition: 'transform 0.2s, box-shadow 0.2s',
   },
   spotImageWrapper: {
@@ -522,11 +586,7 @@ const styles = {
     height: '180px',
     overflow: 'hidden',
   },
-  spotImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
+  spotImage: { width: '100%', height: '100%', objectFit: 'cover' },
   spotImagePlaceholder: {
     height: '180px',
     backgroundColor: 'var(--cream-dark)',
@@ -548,20 +608,14 @@ const styles = {
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
   },
-  spotCardBody: {
-    padding: '16px',
-  },
+  spotCardBody: { padding: '16px' },
   spotName: {
     fontSize: '16px',
     color: 'var(--dark)',
     fontFamily: 'Playfair Display, serif',
     marginBottom: '6px',
   },
-  spotCity: {
-    color: 'var(--text-light)',
-    fontSize: '13px',
-    marginBottom: '10px',
-  },
+  spotCity: { color: 'var(--text-light)', fontSize: '13px', marginBottom: '10px' },
   spotFooter: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -569,14 +623,35 @@ const styles = {
     paddingTop: '10px',
     borderTop: '1px solid var(--cream-dark)',
   },
-  spotRating: {
+  spotRating: { fontSize: '13px', fontWeight: '600', color: 'var(--text)' },
+  spotReviews: { fontSize: '12px', color: 'var(--text-light)' },
+  // Edit/Delete action row on cards
+  cardActions: {
+    display: 'flex',
+    borderTop: '1px solid var(--cream-dark)',
+  },
+  cardEditBtn: {
+    flex: 1,
+    padding: '10px',
+    textAlign: 'center',
     fontSize: '13px',
     fontWeight: '600',
-    color: 'var(--text)',
+    color: 'var(--primary)',
+    textDecoration: 'none',
+    borderRight: '1px solid var(--cream-dark)',
+    fontFamily: 'DM Sans, sans-serif',
   },
-  spotReviews: {
-    fontSize: '12px',
-    color: 'var(--text-light)',
+  cardDeleteBtn: {
+    flex: 1,
+    padding: '10px',
+    textAlign: 'center',
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#dc2626',
+    backgroundColor: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    fontFamily: 'DM Sans, sans-serif',
   },
   emptySpots: {
     textAlign: 'center',
@@ -585,21 +660,14 @@ const styles = {
     borderRadius: '16px',
     boxShadow: 'var(--shadow-sm)',
   },
-  emptyIcon: {
-    fontSize: '48px',
-    marginBottom: '16px',
-  },
+  emptyIcon: { fontSize: '48px', marginBottom: '16px' },
   emptyTitle: {
     fontSize: '20px',
     color: 'var(--dark)',
     marginBottom: '8px',
     fontFamily: 'Playfair Display, serif',
   },
-  emptyText: {
-    color: 'var(--text-light)',
-    marginBottom: '20px',
-    fontSize: '15px',
-  },
+  emptyText: { color: 'var(--text-light)', marginBottom: '20px', fontSize: '15px' },
   addBtn: {
     display: 'inline-block',
     backgroundColor: 'var(--primary)',

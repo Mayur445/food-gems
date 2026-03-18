@@ -1,25 +1,25 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { login } from '../api/auth';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
     try {
       const data = await login({ email, password });
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.data));
+      toast.success(`Welcome back, ${data.data.name}! 👋`);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      toast.error(err.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -60,12 +60,6 @@ function Login() {
         <div style={styles.card} className="split-card">
           <h2 style={styles.cardTitle}>Sign In</h2>
           <p style={styles.cardSubtitle}>Enter your credentials to continue</p>
-
-          {error && (
-            <div style={styles.errorBox}>
-              ⚠️ {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit}>
             <div style={styles.field}>
@@ -233,15 +227,6 @@ const styles = {
     color: 'var(--text-light)',
     fontSize: '15px',
     marginBottom: '28px',
-  },
-  errorBox: {
-    backgroundColor: '#fff0f0',
-    border: '1px solid #ffcccc',
-    color: '#cc0000',
-    padding: '12px 16px',
-    borderRadius: '10px',
-    fontSize: '14px',
-    marginBottom: '20px',
   },
   field: {
     marginBottom: '20px',

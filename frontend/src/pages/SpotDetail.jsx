@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { getSpotById } from '../api/spots';
 import api from '../api/axios';
 
@@ -10,8 +11,6 @@ function SpotDetail() {
   const [error, setError] = useState('');
   const [review, setReview] = useState({ rating: 5, title: '', body: '' });
   const [reviewLoading, setReviewLoading] = useState(false);
-  const [reviewError, setReviewError] = useState('');
-  const [reviewSuccess, setReviewSuccess] = useState(false);
 
   const token = localStorage.getItem('token');
   const isLoggedIn = !!token;
@@ -34,8 +33,6 @@ function SpotDetail() {
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     setReviewLoading(true);
-    setReviewError('');
-    setReviewSuccess(false);
     try {
       await api.post(`/spots/${id}/reviews`, {
         rating: parseInt(review.rating),
@@ -44,10 +41,9 @@ function SpotDetail() {
       });
       await fetchSpot();
       setReview({ rating: 5, title: '', body: '' });
-      setReviewSuccess(true);
-      setTimeout(() => setReviewSuccess(false), 3000);
+      toast.success('✅ Review submitted successfully!');
     } catch (err) {
-      setReviewError(err.response?.data?.message || 'Failed to submit review');
+      toast.error(err.response?.data?.message || 'Failed to submit review');
     } finally {
       setReviewLoading(false);
     }
@@ -196,15 +192,7 @@ function SpotDetail() {
             <div style={styles.section} className="spot-section">
               <h2 style={styles.sectionTitle} className="spot-section-title">Write a Review</h2>
 
-              {reviewError && (
-                <div style={styles.errorBox}>⚠️ {reviewError}</div>
-              )}
-              {reviewSuccess && (
-                <div style={styles.successBox}>✅ Review submitted successfully!</div>
-              )}
-
               <form onSubmit={handleReviewSubmit}>
-                {/* Star Rating */}
                 <div style={styles.field}>
                   <label style={styles.label}>Your Rating</label>
                   <div style={styles.starSelector}>
@@ -615,24 +603,6 @@ const styles = {
     cursor: 'pointer',
     fontFamily: 'DM Sans, sans-serif',
     width: '100%',
-  },
-  errorBox: {
-    backgroundColor: '#fff0f0',
-    border: '1px solid #ffcccc',
-    color: '#cc0000',
-    padding: '12px 16px',
-    borderRadius: '10px',
-    fontSize: '14px',
-    marginBottom: '20px',
-  },
-  successBox: {
-    backgroundColor: '#f0fff4',
-    border: '1px solid #86efac',
-    color: '#166534',
-    padding: '12px 16px',
-    borderRadius: '10px',
-    fontSize: '14px',
-    marginBottom: '20px',
   },
   loginPrompt: {
     backgroundColor: 'white',

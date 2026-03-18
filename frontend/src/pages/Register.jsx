@@ -1,26 +1,26 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { register } from '../api/auth';
 
 function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
     try {
       const data = await register({ name, email, password });
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.data));
+      toast.success(`Welcome to Food Gems, ${data.data.name}! 🍜`);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      toast.error(err.response?.data?.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -57,10 +57,6 @@ function Register() {
         <div style={styles.card} className="split-card">
           <h2 style={styles.cardTitle}>Create Account</h2>
           <p style={styles.cardSubtitle}>It's free and takes less than a minute</p>
-
-          {error && (
-            <div style={styles.errorBox}>⚠️ {error}</div>
-          )}
 
           <form onSubmit={handleSubmit}>
             <div style={styles.field}>
@@ -229,15 +225,6 @@ const styles = {
     color: 'var(--text-light)',
     fontSize: '15px',
     marginBottom: '28px',
-  },
-  errorBox: {
-    backgroundColor: '#fff0f0',
-    border: '1px solid #ffcccc',
-    color: '#cc0000',
-    padding: '12px 16px',
-    borderRadius: '10px',
-    fontSize: '14px',
-    marginBottom: '20px',
   },
   field: {
     marginBottom: '18px',

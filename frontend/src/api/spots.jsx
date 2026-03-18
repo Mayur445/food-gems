@@ -24,6 +24,16 @@ export const createSpot = async (spotData) => {
   return response.data;
 };
 
+export const updateSpot = async (id, spotData) => {
+  const response = await api.put(`/spots/${id}`, spotData);
+  return response.data;
+};
+
+export const deleteSpot = async (id) => {
+  const response = await api.delete(`/spots/${id}`);
+  return response.data;
+};
+
 export const uploadPhoto = async (spotId, formData) => {
   const response = await api.post(`/spots/${spotId}/photos`, formData, {
     headers: {

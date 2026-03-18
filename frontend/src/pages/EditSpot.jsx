@@ -1,18 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { createSpot, uploadPhoto } from '../api/spots';
+import { getSpotById, updateSpot, uploadPhoto } from '../api/spots';
 
 const CATEGORIES = [
   'Street Food', 'Tea Stall', 'Cafe',
   'Restaurant', 'Bakery', 'Juice Shop', 'Biryani', 'Sweets'
 ];
 
-function AddSpot() {
+function EditSpot() {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [existingPhoto, setExistingPhoto] = useState(null);
   const [locationLoading, setLocationLoading] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -28,10 +31,49 @@ function AddSpot() {
   });
 
   const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
 
   useEffect(() => {
-    if (!token) navigate('/login');
+    if (!token) { navigate('/login'); return; }
+    fetchSpot();
   }, []);
+
+  const fetchSpot = async () => {
+    try {
+      const data = await getSpotById(id);
+      const spot = data.data;
+
+      // Check ownership — only the creator can edit
+      if (spot.createdBy !== user?.id) {
+        toast.error('You can only edit your own spots');
+        navigate('/profile');
+        return;
+      }
+
+      setFormData({
+        name: spot.name || '',
+        description: spot.description || '',
+        address: spot.address || '',
+        city: spot.city || '',
+        latitude: spot.latitude || '',
+        longitude: spot.longitude || '',
+        priceRange: spot.priceRange || 'cheap',
+        category: spot.category || 'Street Food',
+      });
+
+      // Set existing primary photo as preview
+      const primary = spot.photos?.find(p => p.isPrimary) || spot.photos?.[0];
+      if (primary) {
+        setExistingPhoto(primary.url);
+        setPhotoPreview(primary.url);
+      }
+    } catch (err) {
+      toast.error('Failed to load spot');
+      navigate('/profile');
+    } finally {
+      setFetching(false);
+    }
+  };
 
   const handleGetLocation = () => {
     setLocationLoading(true);
@@ -58,18 +100,11 @@ function AddSpot() {
           const address = data.address?.road ||
                           data.address?.neighbourhood ||
                           data.address?.suburb || '';
-
-          setFormData(prev => ({
-            ...prev,
-            latitude,
-            longitude,
-            city,
-            address
-          }));
-          toast.success('📍 Location captured!');
+          setFormData(prev => ({ ...prev, latitude, longitude, city, address }));
+          toast.success('📍 Location updated!');
         } catch (err) {
           setFormData(prev => ({ ...prev, latitude, longitude }));
-          toast.success('📍 Location captured!');
+          toast.success('📍 Location updated!');
         }
         setLocationLoading(false);
       },
@@ -94,12 +129,14 @@ function AddSpot() {
     if (file) {
       setPhoto(file);
       setPhotoPreview(URL.createObjectURL(file));
+      setExistingPhoto(null);
     }
   };
 
   const handleRemovePhoto = () => {
     setPhoto(null);
     setPhotoPreview(null);
+    setExistingPhoto(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -113,41 +150,48 @@ function AddSpot() {
 
     setLoading(true);
     try {
-      const spotResponse = await createSpot(formData);
-      const newSpotId = spotResponse.data.id;
+      await updateSpot(id, formData);
 
+      // Upload new photo if user selected one
       if (photo) {
         const photoFormData = new FormData();
         photoFormData.append('photo', photo);
         photoFormData.append('caption', formData.name);
         photoFormData.append('isPrimary', 'true');
-        await uploadPhoto(newSpotId, photoFormData);
+        await uploadPhoto(id, photoFormData);
       }
 
-      toast.success(`🍽️ "${formData.name}" added successfully!`);
-      navigate(`/spots/${newSpotId}`);
+      toast.success(`✅ "${formData.name}" updated successfully!`);
+      navigate(`/spots/${id}`);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to create spot');
+      toast.error(err.response?.data?.message || 'Failed to update spot');
     } finally {
       setLoading(false);
     }
   };
+
+  if (fetching) return (
+    <div style={styles.loadingPage}>
+      <div style={styles.loadingSpinner}>🍜</div>
+      <p style={styles.loadingText}>Loading spot...</p>
+    </div>
+  );
 
   return (
     <div style={styles.page} className="split-page">
       {/* Left Side */}
       <div style={styles.left} className="split-left">
         <div style={styles.leftInner} className="split-left-inner">
-          <div style={styles.badge}>🍽️ Share a Gem</div>
-          <h1 style={styles.title} className="split-left-title">Know a hidden<br />food paradise?</h1>
+          <div style={styles.badge}>✎ Edit Spot</div>
+          <h1 style={styles.title} className="split-left-title">Update your<br />food gem.</h1>
           <p style={styles.subtitle} className="split-left-subtitle">
-            Share it with travelers who are searching for authentic, real food experiences.
+            Keep your listing accurate and up to date so travelers always get the best experience.
           </p>
           <div style={styles.tips} className="split-left-extras">
             <p style={styles.tipsTitle}>✦ Tips for a great listing</p>
             {[
               '📸 Add a clear photo of the food or place',
-              '📍 Share your current location easily',
+              '📍 Make sure location is accurate',
               '✍️ Describe what makes it special',
               '💰 Set the right price range',
               '🗂️ Choose the correct category',
@@ -163,8 +207,13 @@ function AddSpot() {
       {/* Right Side */}
       <div style={styles.right} className="split-right">
         <div style={styles.card} className="split-card">
-          <h2 style={styles.cardTitle}>Add a Food Spot</h2>
-          <p style={styles.cardSubtitle}>Fill in the details below</p>
+          <div style={styles.cardHeader}>
+            <div>
+              <h2 style={styles.cardTitle}>Edit Food Spot</h2>
+              <p style={styles.cardSubtitle}>Update the details below</p>
+            </div>
+            <Link to={`/spots/${id}`} style={styles.cancelLink}>← Cancel</Link>
+          </div>
 
           <form onSubmit={handleSubmit}>
 
@@ -174,6 +223,9 @@ function AddSpot() {
               {photoPreview ? (
                 <div style={styles.previewWrapper}>
                   <img src={photoPreview} alt="Preview" style={styles.previewImage} />
+                  {existingPhoto && (
+                    <div style={styles.existingPhotoBadge}>Current photo</div>
+                  )}
                   <div style={styles.previewOverlay}>
                     <button type="button" onClick={handleRemovePhoto} style={styles.removePhotoBtn}>
                       ✕ Remove
@@ -186,7 +238,7 @@ function AddSpot() {
               ) : (
                 <div style={styles.uploadZone} onClick={() => fileInputRef.current.click()}>
                   <p style={styles.uploadIcon}>📸</p>
-                  <p style={styles.uploadText}>Click to upload a photo</p>
+                  <p style={styles.uploadText}>Click to upload a new photo</p>
                   <p style={styles.uploadHint}>JPG, PNG or WebP — max 5MB</p>
                 </div>
               )}
@@ -252,7 +304,7 @@ function AddSpot() {
 
               {formData.latitude && formData.longitude ? (
                 <div style={styles.locationConfirmed}>
-                  <span>✅ Location captured!</span>
+                  <span>✅ Location set!</span>
                   <span style={styles.locationCoords}>
                     {Number(formData.latitude).toFixed(4)}, {Number(formData.longitude).toFixed(4)}
                   </span>
@@ -277,9 +329,7 @@ function AddSpot() {
                       <p style={styles.locationBtnTitle}>
                         {locationLoading ? 'Getting your location...' : 'Use My Current Location'}
                       </p>
-                      <p style={styles.locationBtnDesc}>
-                        Like WhatsApp location sharing
-                      </p>
+                      <p style={styles.locationBtnDesc}>Like WhatsApp location sharing</p>
                     </div>
                   </button>
 
@@ -291,42 +341,18 @@ function AddSpot() {
 
                   <div style={styles.row}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <input
-                        name="city"
-                        value={formData.city}
-                        onChange={handleChange}
-                        style={styles.input}
-                        placeholder="City"
-                      />
+                      <input name="city" value={formData.city} onChange={handleChange} style={styles.input} placeholder="City" />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <input
-                        name="address"
-                        value={formData.address}
-                        onChange={handleChange}
-                        style={styles.input}
-                        placeholder="Area / Street"
-                      />
+                      <input name="address" value={formData.address} onChange={handleChange} style={styles.input} placeholder="Area / Street" />
                     </div>
                   </div>
                   <div style={styles.row}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <input
-                        name="latitude"
-                        value={formData.latitude}
-                        onChange={handleChange}
-                        style={styles.input}
-                        placeholder="Latitude (e.g. 12.9716)"
-                      />
+                      <input name="latitude" value={formData.latitude} onChange={handleChange} style={styles.input} placeholder="Latitude (e.g. 12.9716)" />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <input
-                        name="longitude"
-                        value={formData.longitude}
-                        onChange={handleChange}
-                        style={styles.input}
-                        placeholder="Longitude (e.g. 77.5946)"
-                      />
+                      <input name="longitude" value={formData.longitude} onChange={handleChange} style={styles.input} placeholder="Longitude (e.g. 77.5946)" />
                     </div>
                   </div>
                 </div>
@@ -358,16 +384,8 @@ function AddSpot() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              style={styles.submitBtn}
-              disabled={loading}
-            >
-              {loading ? (
-                <span>⏳ {photo ? 'Creating spot & uploading photo...' : 'Adding spot...'}</span>
-              ) : (
-                '🍽️ Add This Gem →'
-              )}
+            <button type="submit" style={styles.submitBtn} disabled={loading}>
+              {loading ? '⏳ Saving changes...' : '✅ Save Changes →'}
             </button>
           </form>
         </div>
@@ -377,6 +395,22 @@ function AddSpot() {
 }
 
 const styles = {
+  loadingPage: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 'calc(100vh - 68px)',
+    gap: '16px',
+  },
+  loadingSpinner: {
+    fontSize: '48px',
+    animation: 'pulse 1.5s ease-in-out infinite',
+  },
+  loadingText: {
+    color: 'var(--text-light)',
+    fontSize: '16px',
+  },
   page: {
     display: 'flex',
     minHeight: 'calc(100vh - 68px)',
@@ -471,16 +505,39 @@ const styles = {
     maxWidth: '700px',
     margin: '0 auto',
   },
+  cardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: '28px',
+  },
   cardTitle: {
     fontSize: '28px',
     color: 'var(--dark)',
-    marginBottom: '6px',
+    marginBottom: '4px',
     fontFamily: 'Playfair Display, serif',
   },
   cardSubtitle: {
     color: 'var(--text-light)',
     fontSize: '15px',
-    marginBottom: '28px',
+  },
+  cancelLink: {
+    color: 'var(--text-light)',
+    fontSize: '14px',
+    textDecoration: 'none',
+    fontWeight: '500',
+    marginTop: '6px',
+  },
+  existingPhotoBadge: {
+    position: 'absolute',
+    top: '12px',
+    left: '12px',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    color: 'white',
+    padding: '4px 10px',
+    borderRadius: '100px',
+    fontSize: '11px',
+    fontWeight: '600',
   },
   field: {
     marginBottom: '20px',
@@ -727,4 +784,4 @@ const styles = {
   },
 };
 
-export default AddSpot;
+export default EditSpot;
