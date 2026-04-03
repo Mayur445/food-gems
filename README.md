@@ -1,38 +1,92 @@
 # 🍜 Food Gems
 
-A community-powered hidden food discovery app for travelers.
+A community-powered hidden food discovery platform for travelers.
 
-## What is this?
-Food Gems lets travelers discover and share hidden food spots — street stalls, roadside carts, small eateries — that are not found on mainstream platforms.
+## 🚀 What is this?
 
-## Features
-- 🗺️ Discover hidden food spots near any location
-- 📸 Share photos of amazing food
-- ⭐ Read and write honest reviews
-- 🔍 Search by name, city or description
-- 🏷️ Filter by category and price range
-- 🔐 JWT authentication
+Food Gems helps travelers discover and share **hidden food spots** — street stalls, roadside carts, and small local eateries that are often missed by mainstream platforms.
 
-## Tech Stack
-**Backend:** Node.js, Express, PostgreSQL, Prisma, JWT, Cloudinary
+---
 
-**Frontend:** React.js, Vite, React Router, Axios
+## ✨ Features
 
-**Mobile:** React Native (coming soon)
+* 🗺️ Discover hidden food spots with location-based data
+* 📸 Upload food photos with Cloudinary integration
+* ⭐ Review and rate places with a full review system
+* 🔍 Search by name, city, or description (with filtering)
+* 🏷️ Filter by category and price range
+* 🔐 JWT-based authentication (login/register)
+* 👤 User profiles with personal spots and stats
+* 📍 GPS location + map preview + directions (mobile)
 
-## Running the Project
+---
+
+## 📱 Platforms
+
+### 🌐 Web App
+
+* Browse, search, and explore food gems
+* Add and review spots
+
+### 📲 Mobile App (React Native)
+
+* Full feature parity with backend
+* Location-based spot creation
+* Camera & gallery image upload
+* Real-time reviews and navigation support
+
+---
+
+## 🛠️ Tech Stack
+
+**Backend:**
+Node.js, Express, PostgreSQL, Prisma, JWT, Cloudinary
+
+**Frontend (Web):**
+React.js, Vite, React Router, Axios
+
+**Mobile:**
+React Native (Expo), Axios, AsyncStorage, Image Picker, Location API
+
+---
+
+## ⚙️ Running the Project
 
 ### Backend
+
 cd backend
 npm install
 npm run dev
-Runs on http://localhost:5000
 
-### Frontend
+Runs on: http://localhost:5000
+
+---
+
+### Frontend (Web)
+
 cd frontend
 npm install
 npm run dev
-Runs on http://localhost:5173
 
-## Developer
-Built by Mayur — software engineering graduate from Hassan
+Runs on: http://localhost:5173
+
+---
+
+### Mobile (React Native)
+
+cd mobile
+npm install
+npm start
+
+---
+
+## 📸 Demo (Recommended)
+
+*Add screenshots or a short demo video here*
+
+---
+
+## 👨‍💻 Developer
+
+Built by Mayur
+Software Engineering Graduate from Hassan
