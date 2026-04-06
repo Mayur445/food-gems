@@ -40,14 +40,21 @@ export default function RegisterScreen({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-
-        {/* Banner — mirrors web dark green left panel */}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'android' ? -200 : 0}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
+        {/* Banner */}
         <View style={styles.banner}>
           <View style={styles.circle1} />
           <View style={styles.circle2} />
-
           <View style={styles.bannerInner}>
             <View style={styles.badge}>
               <Text style={styles.badgeText}>✦ Join the Community</Text>
@@ -139,98 +146,63 @@ export default function RegisterScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.cream },
   scroll: { flexGrow: 1, paddingBottom: 40 },
-
   banner: {
     backgroundColor: '#1a2a1a',
-    paddingTop: 48,
-    paddingBottom: 48,
-    paddingHorizontal: 28,
-    position: 'relative',
-    overflow: 'hidden',
+    paddingTop: 48, paddingBottom: 48, paddingHorizontal: 28,
+    position: 'relative', overflow: 'hidden',
   },
   circle1: {
-    position: 'absolute',
-    top: -80,
-    right: -80,
-    width: 240,
-    height: 240,
-    borderRadius: 120,
+    position: 'absolute', top: -80, right: -80,
+    width: 240, height: 240, borderRadius: 120,
     backgroundColor: 'rgba(232,116,26,0.08)',
   },
   circle2: {
-    position: 'absolute',
-    bottom: -60,
-    left: -40,
-    width: 180,
-    height: 180,
-    borderRadius: 90,
+    position: 'absolute', bottom: -60, left: -40,
+    width: 180, height: 180, borderRadius: 90,
     backgroundColor: 'rgba(232,116,26,0.05)',
   },
   bannerInner: { position: 'relative', zIndex: 2 },
   badge: {
     alignSelf: 'flex-start',
     backgroundColor: 'rgba(232,116,26,0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(232,116,26,0.35)',
-    paddingHorizontal: 16,
-    paddingVertical: 7,
-    borderRadius: 100,
-    marginBottom: 20,
+    borderWidth: 1, borderColor: 'rgba(232,116,26,0.35)',
+    paddingHorizontal: 16, paddingVertical: 7,
+    borderRadius: 100, marginBottom: 20,
   },
   badgeText: { color: COLORS.primary, fontSize: 13, fontWeight: '600' },
   bannerTitle: {
-    fontSize: 30,
-    color: COLORS.white,
-    lineHeight: 38,
-    marginBottom: 12,
-    fontWeight: '700',
+    fontSize: 30, color: COLORS.white, lineHeight: 38,
+    marginBottom: 12, fontWeight: '700',
   },
   bannerSubtitle: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 14,
-    lineHeight: 21,
-    marginBottom: 20,
+    color: 'rgba(255,255,255,0.6)', fontSize: 14,
+    lineHeight: 21, marginBottom: 20,
   },
   featureRow: { marginBottom: 10 },
-  featureText: {
-    color: 'rgba(255,255,255,0.75)',
-    fontSize: 14,
-    lineHeight: 20,
-  },
-
+  featureText: { color: 'rgba(255,255,255,0.75)', fontSize: 14, lineHeight: 20 },
   card: {
-    backgroundColor: COLORS.white,
-    margin: 20,
-    borderRadius: 24,
-    padding: 28,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-    elevation: 8,
+    backgroundColor: COLORS.white, margin: 20, borderRadius: 24, padding: 28,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12, shadowRadius: 24, elevation: 8,
   },
   cardTitle: { fontSize: 26, fontWeight: '700', color: COLORS.dark, marginBottom: 4 },
   cardSubtitle: { color: COLORS.textLight, fontSize: 14, marginBottom: 24 },
-
   field: { marginBottom: 16 },
   label: {
     fontSize: 12, fontWeight: '600', color: COLORS.text,
     marginBottom: 8, letterSpacing: 0.5, textTransform: 'uppercase',
   },
   input: {
-    backgroundColor: COLORS.cream,
-    borderWidth: 2, borderColor: COLORS.creamDark,
+    backgroundColor: COLORS.cream, borderWidth: 2, borderColor: COLORS.creamDark,
     borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13,
     fontSize: 15, color: COLORS.text,
   },
   button: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12, padding: 15,
-    alignItems: 'center', marginTop: 8,
+    backgroundColor: COLORS.primary, borderRadius: 12,
+    padding: 15, alignItems: 'center', marginTop: 8,
   },
   buttonText: { color: COLORS.white, fontSize: 16, fontWeight: '600' },
   terms: { textAlign: 'center', marginTop: 14, color: '#bbb', fontSize: 12 },
-
   footer: {
     flexDirection: 'row', justifyContent: 'center',
     alignItems: 'center', paddingHorizontal: 20,

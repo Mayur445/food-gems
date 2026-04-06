@@ -68,25 +68,47 @@ cd frontend
 npm install
 npm run dev
 
-Runs on: http://localhost:5173
 
----
+=======
+## 📸 Demo
+### Home page
+![Home](assets/screenshots/web/Home-page.png)
+![Home](assets/screenshots/web/Home page Spots.png)
+![Home](assets/screenshots/web/Home page map view.png)
 
-### Mobile (React Native)
+### Login page
+![Home](assets/screenshots/web/Login page.png)
 
-cd mobile
-npm install
-npm start
+### Register page
+![Home](assets/screenshots/web/Register page.png)
 
----
+### Spot Detail page
+![Home](assets/screenshots/web/Spot Detail page.png)
 
-## 📸 Demo (Recommended)
+### Profile page
+![Home](assets/screenshots/web/Profile page.png)
 
-*Add screenshots or a short demo video here*
+### Profile page 
+![Home](assets/screenshots/web/Add spot page- 1.png)
+![Home](assets/screenshots/web/Add spot page- 2.png)
 
----
+### Home Screen Mobile
+![Home](assets/screenshots/mobile/Home Screen View.png)
 
-## 👨‍💻 Developer
+### Login Screen Mobile
+![Home](assets/screenshots/mobile/Login Screen View.png)
 
-Built by Mayur
-Software Engineering Graduate from Hassan
+### Register Screen Mobile
+![Home](assets/screenshots/mobile/Register Screen View.png)
+
+### Profile Screen Mobile
+![Home](assets/screenshots/mobile/Profile Screen View.png)
+
+### Add Spot Screen Mobile
+![Home](assets/screenshots/mobile/Add Spot Screen View.png)
+
+### Spot View Screen Mobile
+![Home](assets/screenshots/mobile/Spot View Screen View.png)
+
+## Developer
+Built by Mayur — software engineering graduate from Hassan
