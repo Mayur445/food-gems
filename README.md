@@ -99,12 +99,12 @@ npm run dev
 
 ### 📲 Mobile App
 
-![Home](assets/screenshots/mobile/Home-Screen-View.jpeg)
-![Login](assets/screenshots/mobile/Login-Screen-View.jpeg)
-![Register](assets/screenshots/mobile/Register-Screen-View.jpeg)
-![Profile](assets/screenshots/mobile/Profile-Screen-View.jpeg)
-![Add Spot](assets/screenshots/mobile/Add-Spot-Screen-View.jpeg)
-![Spot View](assets/screenshots/mobile/Spot-View-Screen-View.jpeg)
+![Home](assets/screenshots/mobile/Home-Screen-View-Mobile.jpeg)
+![Login](assets/screenshots/mobile/Login-Screen-View-Mobile.jpeg)
+![Register](assets/screenshots/mobile/Register-Screen-View-Mobile.jpeg)
+![Profile](assets/screenshots/mobile/Profile-Screen-View-Mobile.jpeg)
+![Add Spot](assets/screenshots/mobile/Add-Spot-Screen-View-Mobile.jpeg)
+![Spot View](assets/screenshots/mobile/Spot-View-Screen-View-Mobile.jpeg)
 
 ---
 
