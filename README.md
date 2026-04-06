@@ -77,34 +77,34 @@ npm run dev
 #### Home
 
 ![Home](assets/screenshots/web/Home-page.png)
-![Home](assets/screenshots/web/Home page Spots.png)
-![Home](assets/screenshots/web/Home page map view.png)
+![Home](assets/screenshots/web/Home-page-Spots.png)
+![Home](assets/screenshots/web/Home-page-map-view.png)
 
 #### Auth
 
-![Login](assets/screenshots/web/Login page.png)
-![Register](assets/screenshots/web/Register page.png)
+![Login](assets/screenshots/web/Login-page.png)
+![Register](assets/screenshots/web/Register-page.png)
 
 #### Spot Detail
 
-![Spot Detail](assets/screenshots/web/Spot Detail page.png)
+![Spot Detail](assets/screenshots/web/Spot-Detail-page.png)
 
 #### Profile & Add Spot
 
-![Profile](assets/screenshots/web/Profile page.png)
-![Add Spot](assets/screenshots/web/Add spot page- 1.png)
-![Add Spot](assets/screenshots/web/Add spot page- 2.png)
+![Profile](assets/screenshots/web/Profile-page.png)
+![Add Spot](assets/screenshots/web/Add-spot-page-1.png)
+![Add Spot](assets/screenshots/web/Add-spot-page-2.png)
 
 ---
 
 ### 📲 Mobile App
 
-![Home](assets/screenshots/mobile/Home Screen View.png)
-![Login](assets/screenshots/mobile/Login Screen View.png)
-![Register](assets/screenshots/mobile/Register Screen View.png)
-![Profile](assets/screenshots/mobile/Profile Screen View.png)
-![Add Spot](assets/screenshots/mobile/Add Spot Screen View.png)
-![Spot View](assets/screenshots/mobile/Spot View Screen View.png)
+![Home](assets/screenshots/mobile/Home-Screen-View.png)
+![Login](assets/screenshots/mobile/Login-Screen-View.png)
+![Register](assets/screenshots/mobile/Register-Screen-View.png)
+![Profile](assets/screenshots/mobile/Profile-Screen-View.png)
+![Add Spot](assets/screenshots/mobile/Add-Spot-Screen-View.png)
+![Spot View](assets/screenshots/mobile/Spot-View-Screen-View.png)
 
 ---
 
