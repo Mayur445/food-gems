@@ -68,47 +68,47 @@ cd frontend
 npm install
 npm run dev
 
+---
 
-=======
 ## 📸 Demo
-### Home page
+
+### 🌐 Web App
+
+#### Home
+
 ![Home](assets/screenshots/web/Home-page.png)
 ![Home](assets/screenshots/web/Home page Spots.png)
 ![Home](assets/screenshots/web/Home page map view.png)
 
-### Login page
-![Home](assets/screenshots/web/Login page.png)
+#### Auth
 
-### Register page
-![Home](assets/screenshots/web/Register page.png)
+![Login](assets/screenshots/web/Login page.png)
+![Register](assets/screenshots/web/Register page.png)
 
-### Spot Detail page
-![Home](assets/screenshots/web/Spot Detail page.png)
+#### Spot Detail
 
-### Profile page
-![Home](assets/screenshots/web/Profile page.png)
+![Spot Detail](assets/screenshots/web/Spot Detail page.png)
 
-### Profile page 
-![Home](assets/screenshots/web/Add spot page- 1.png)
-![Home](assets/screenshots/web/Add spot page- 2.png)
+#### Profile & Add Spot
 
-### Home Screen Mobile
+![Profile](assets/screenshots/web/Profile page.png)
+![Add Spot](assets/screenshots/web/Add spot page- 1.png)
+![Add Spot](assets/screenshots/web/Add spot page- 2.png)
+
+---
+
+### 📲 Mobile App
+
 ![Home](assets/screenshots/mobile/Home Screen View.png)
+![Login](assets/screenshots/mobile/Login Screen View.png)
+![Register](assets/screenshots/mobile/Register Screen View.png)
+![Profile](assets/screenshots/mobile/Profile Screen View.png)
+![Add Spot](assets/screenshots/mobile/Add Spot Screen View.png)
+![Spot View](assets/screenshots/mobile/Spot View Screen View.png)
 
-### Login Screen Mobile
-![Home](assets/screenshots/mobile/Login Screen View.png)
+---
 
-### Register Screen Mobile
-![Home](assets/screenshots/mobile/Register Screen View.png)
+## 👨‍💻 Developer
 
-### Profile Screen Mobile
-![Home](assets/screenshots/mobile/Profile Screen View.png)
-
-### Add Spot Screen Mobile
-![Home](assets/screenshots/mobile/Add Spot Screen View.png)
-
-### Spot View Screen Mobile
-![Home](assets/screenshots/mobile/Spot View Screen View.png)
-
-## Developer
-Built by Mayur — software engineering graduate from Hassan
+Built by Mayur
+Software Engineering Graduate from Hassan
